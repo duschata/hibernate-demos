@@ -144,13 +144,42 @@ public class CdiJpaTest {
         try {
             transactionalTestService.doSomething();
             fail("Exception raised due to missing yet required transaction wasn't raised");
-        }
-        catch(TransactionalException e) {
+        } catch (TransactionalException e) {
             assertThat(e.getMessage().contains("ARJUNA016110"));
         }
 
         ut.begin();
         assertThat(transactionalTestService.doSomething()).isEqualTo("Success");
         ut.rollback();
+    }
+
+    //    If this test runs first, all following Tests are failing
+    @Test
+    public void canUseTransactionRequiresNewButFails() throws Exception {
+        ut.begin();
+
+//        Test will fail if em is used...
+        entityManager.find(TestEntityWithGeneratedId.class, 1L);
+
+        TestEntityWithGeneratedId testEntityWithGeneratedId = new TestEntityWithGeneratedId();
+        testEntityWithGeneratedId.name = "testEntityWithGeneratedId";
+
+        transactionalTestService.saveInNewTransaction(testEntityWithGeneratedId);
+
+        ut.rollback();
+    }
+
+
+    //    If this test runs first, it's working
+    @Test
+    public void canUseTransactionRequiresNew() throws Exception {
+        ut.begin();
+
+        TestEntityWithGeneratedId testEntityWithGeneratedId = new TestEntityWithGeneratedId();
+        testEntityWithGeneratedId.name = "testEntityWithGeneratedId";
+
+        transactionalTestService.saveInNewTransaction(testEntityWithGeneratedId);
+
+        ut.commit();
     }
 }

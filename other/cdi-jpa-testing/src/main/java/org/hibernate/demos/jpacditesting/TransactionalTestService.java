@@ -5,14 +5,26 @@
 package org.hibernate.demos.jpacditesting;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 @ApplicationScoped
 public class TransactionalTestService {
 
-    @Transactional(value=TxType.MANDATORY)
+    @Inject
+    EntityManager entityManager;
+
+    @Transactional(value = TxType.MANDATORY)
     public String doSomething() {
+        return "Success";
+    }
+
+
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public String saveInNewTransaction(Object o) {
+        entityManager.persist(o);
         return "Success";
     }
 }
